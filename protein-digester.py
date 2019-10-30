@@ -6,8 +6,8 @@ import sys
 import re
 
 # Usage & optional inputs
-enzymes = ['1', '2', '3', '4']
-parser = argparse.ArgumentParser(description='This is a protein digester, using the user-defined choice to digest proteins into small peptide sequences. Enzyme choice could be selected from "1. Trypsin, 2. Endoproteinase Lys-C, 3. Endoproteinase Arg-C, 4. V8 proteinase (Glu-C)". Please input the number of these choices.')
+enzymes = ['t', 'k', 'r', 'v']
+parser = argparse.ArgumentParser(description='This is a protein digester, using the user-defined choice to digest proteins into small peptide sequences. Enzyme choice could be selected from "t. Trypsin, k. Endoproteinase Lys-C, r. Endoproteinase Arg-C, v. V8 proteinase (Glu-C)". Please input the number of these choices.')
 parser.add_argument('-e', '--enzyme', help='select one digesting enzyme to cut proteins', choices=enzymes)
 parser.add_argument('-i', '--input', default='proteins.fasta', help='input file which contains protein sequences')
 parser.add_argument('-o', '--output', default='peptides.peps', help='output file which contains the result of this programme (peptides)')
@@ -22,23 +22,28 @@ if len(sys.argv) < 2:
     parser.print_help()
     sys.exit(0)
 
+if not enzyme:
+    print('Enzyme shoule be specified!')
+    parser.print_help()
+    sys.exit(3)
+
 if not input_file:
     print('Input file must be specified!\n')
     parser.print_help()
     sys.exit(1)
 
 enzyme_rules = {
-    '1': r'([KR])',
-    '2': r'(K)',
-    '3': r'(R)',
-    '4': r'(E)'
+    't': r'([KR])',
+    'k': r'(K)',
+    'r': r'(R)',
+    'v': r'(E)'
 }
 
 enzyme_dict = {
-    '1': 'Trypsin',
-    '2': 'Endoproteinase Lys-C',
-    '3': 'Endoproteinase Arg-C',
-    '4': 'V8 proteinase (Glu-C)'
+    't': 'Trypsin',
+    'k': 'Endoproteinase Lys-C',
+    'r': 'Endoproteinase Arg-C',
+    'v': 'V8 proteinase (Glu-C)'
 }
 
 def printInputInfo():
@@ -96,6 +101,7 @@ if __name__ == '__main__':
     printInputInfo()
     proteins = readFile(input_file)
     writeObj = open(output_file, 'w')
+    writeObj.write('Missed Cleavages: {0}\n'.format(cleavage_number))
     for key in proteins:
         initial_peps = enzymeFullCut(proteins[key], enzyme_rules[enzyme])
         if cleavage_number:
