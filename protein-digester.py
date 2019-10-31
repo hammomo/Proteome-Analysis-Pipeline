@@ -101,7 +101,6 @@ if __name__ == '__main__':
     printInputInfo()
     proteins = readFile(input_file)
     writeObj = open(output_file, 'w')
-    writeObj.write('Missed Cleavages: {0}\n'.format(cleavage_number))
     for key in proteins:
         initial_peps = enzymeFullCut(proteins[key], enzyme_rules[enzyme])
         if cleavage_number:
@@ -109,6 +108,6 @@ if __name__ == '__main__':
         else:
             peps = initial_peps
         for i in range(0, len(peps)):
-            writeObj.write('>%s\tpeptide\t%d\n' % (key, i+1))
+            writeObj.write('>%s\tpeptide\t%d\tmissed=%d\t%s\n' % (key, i+1, cleavage_number, enzyme_dict[enzyme]))
             writeObj.write('\n'.join([peps[i][j:j+60] for j in range(0,len(peps),60)]) + '\n')
     writeObj.close()

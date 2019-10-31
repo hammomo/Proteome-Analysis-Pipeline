@@ -1,5 +1,18 @@
 #!/usr/bin/python
 # -*- coding: UTF-8 -*-
+import argparse
+import sys
+import re
+
+# Usage & optional inputs
+parser = argparse.ArgumentParser(description='A mass analyser, caculate the monoisotopic mass and average mass for peptides.')
+parser.add_argument('-i', '--input', help='input peptide file name')
+args = parser.parse_args()
+fileObj = args.input
+
+if len(sys.argv) < 2:
+    parser.print_help()
+    sys.exit(0)
 
 m_map = {'A' :  71.0371, 'C' : 103.0092, 'D' : 115.0269, 'E' : 129.0426,
         'F' : 147.0684, 'G' :  57.0215, 'H' : 137.0589, 'I' : 113.0841,
@@ -34,26 +47,33 @@ def averageMass(seq):
        return sum
 
 if __name__ == '__main__':
-       readObj = open('peptides.peps', 'r')
-       monoObj = open('monoisotopic-mass.pepmasses', 'w')
-       avgObj = open('average-mass.pepmasses', 'w')
-       p = readObj.readline().split(':')[1].rstrip('\n')
-       line = readObj.readline()
-       port_name = ''
-       peptide = ''
-       sequence = ''
-       z = 1
-       while line:
-              if line.startswith('>'):
-                     port_name = line.split()[0].split('_')[0].replace('>', '')
-                     peptide = line.split()[-1].rstrip('\n')
-              else:
-                     sequence = line.rstrip('\n')
-                     m_mass = monoisotopicMass(sequence)
-                     a_mass = averageMass(sequence)
-                     monoObj.write('{0}\t{1:>10s}\t{2:>10.4f}\t{3:>2d}\t{4:>1s}\t{5}\n'.format(port_name, peptide, m_mass, z, p, sequence))
-                     avgObj.write('{0}\t{1:>10s}\t{2:>10.4f}\t{3:>2d}\t{4:>1s}\t{5}\n'.format(port_name, peptide, a_mass, z, p, sequence))
+       try:
+              readObj = open(fileObj, 'r')
+              monoObj = open('monoisotopic-mass.pepmasses', 'w')
+              avgObj = open('average-mass.pepmasses', 'w')
               line = readObj.readline()
-       readObj.close()
-       monoObj.close()
-       avgObj.close()
+              port_name = ''
+              peptide = ''
+              sequence = ''
+              z = 1
+              p = 0
+              while line:
+                     if line.startswith('>'):
+                            port_name = line.split()[0].split('_')[0].replace('>', '')
+                            peptide = line.split()[2].rstrip('\n')
+                            p = line.split()[3].split('=')[1]
+                     else:
+                            sequence = line.rstrip('\n')
+                            m_mass = monoisotopicMass(sequence)
+                            a_mass = averageMass(sequence)
+                            monoObj.write('{0}\t{1:>10s}\t{2:>10.4f}\t{3:>2d}\t{4:>1s}\t{5}\n'.format(port_name, peptide, m_mass, z, p, sequence))
+                            avgObj.write('{0}\t{1:>10s}\t{2:>10.4f}\t{3:>2d}\t{4:>1s}\t{5}\n'.format(port_name, peptide, a_mass, z, p, sequence))
+                     line = readObj.readline()
+              readObj.close()
+              monoObj.close()
+              avgObj.close()
+       except:
+              print('Cannot find file {0}, please input the correct file name.'.format(fileObj))
+              parser.print_help()
+              sys.exit(1)
+              
