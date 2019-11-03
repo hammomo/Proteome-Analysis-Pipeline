@@ -31,19 +31,20 @@ a_map = {'A' :  71.08, 'C' : 103.14, 'D' : 115.09, 'E' : 129.12,
 
 water_m_mass = 18.0106
 water_a_mass = 18.0153
+ion_mass = 1
 
 def monoisotopicMass(seq):
        sum = 0
        for aa in seq:
               sum +=  m_map[aa]
-       sum += water_m_mass
+       sum += (water_m_mass + ion_mass)
        return sum
 
 def averageMass(seq):
        sum = 0
        for aa in seq:
               sum += a_map[aa]
-       sum += water_a_mass
+       sum += (water_a_mass + ion_mass)
        return sum
 
 if __name__ == '__main__':

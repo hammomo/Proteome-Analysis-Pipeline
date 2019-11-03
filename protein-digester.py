@@ -6,8 +6,8 @@ import sys
 import re
 
 # Usage & optional inputs
-enzymes = ['t', 'k', 'r', 'v']
-parser = argparse.ArgumentParser(description='This is a protein digester, using the user-defined choice to digest proteins into small peptide sequences. Enzyme choice could be selected from "t. Trypsin, k. Endoproteinase Lys-C, r. Endoproteinase Arg-C, v. V8 proteinase (Glu-C)". Please input the number of these choices.')
+enzymes = ['t', 'k', 'r', 'e']
+parser = argparse.ArgumentParser(description='This is a protein digester, using the user-defined choice to digest proteins into small peptide sequences. Enzyme choice could be selected from "t. Trypsin, k. Endoproteinase Lys-C, r. Endoproteinase Arg-C, e. V8 proteinase (Glu-C)". Please input the number of these choices.')
 parser.add_argument('-e', '--enzyme', help='select one digesting enzyme to cut proteins', choices=enzymes)
 parser.add_argument('-i', '--input', default='proteins.fasta', help='input file which contains protein sequences')
 parser.add_argument('-o', '--output', default='peptides.peps', help='output file which contains the result of this programme (peptides)')
@@ -33,17 +33,21 @@ if not input_file:
     sys.exit(1)
 
 enzyme_rules = {
-    't': r'([KR])',
+    # 't': r'([RK])([^P])',
+    # 'k': r'(K)([^P])',
+    # 'r': r'(R)([^P])',
+    # 'e': r'(E)([^P])'
+    't': r'([RK])',
     'k': r'(K)',
     'r': r'(R)',
-    'v': r'(E)'
+    'e': r'(E)'
 }
 
 enzyme_dict = {
-    't': 'Trypsin',
-    'k': 'Endoproteinase Lys-C',
-    'r': 'Endoproteinase Arg-C',
-    'v': 'V8 proteinase (Glu-C)'
+    't': 'trypsin',
+    'k': 'lys-c',
+    'r': 'arg-c',
+    'e': 'glu-c'
 }
 
 def printInputInfo():
@@ -67,6 +71,7 @@ def enzymeFullCut(seq, rule):
             result.pop(i)
         else:
             i += 1
+    # result = re.sub(rule, r'\1 \2', seq).split()
     return result
 
 def missCleavage(peps, number):
@@ -97,17 +102,25 @@ def readFile(file):
     fileObj.close()
     return proteins
 
+def writeToFile(name, file, missed, initial_peps):
+    peps = initial_peps
+    if missed:
+        peps = missCleavage(peps, missed)
+    for i in range(0, len(peps)):
+        terminal = 'I'
+        if i == 0:
+            terminal = 'N'
+        elif i == len(peps) - 1:
+            terminal = 'C'
+        file.write('>%s\tpeptide\t%d\tmissed=%d\t%s\t%s\n' % (key, i+1, missed, terminal, enzyme_dict[enzyme]))
+        file.write('\n'.join([peps[i][j:j+60] for j in range(0,len(peps),60)]) + '\n')
+
 if __name__ == '__main__':
     printInputInfo()
     proteins = readFile(input_file)
     writeObj = open(output_file, 'w')
     for key in proteins:
-        initial_peps = enzymeFullCut(proteins[key], enzyme_rules[enzyme])
-        if cleavage_number:
-            peps = missCleavage(initial_peps, cleavage_number)
-        else:
-            peps = initial_peps
-        for i in range(0, len(peps)):
-            writeObj.write('>%s\tpeptide\t%d\tmissed=%d\t%s\n' % (key, i+1, cleavage_number, enzyme_dict[enzyme]))
-            writeObj.write('\n'.join([peps[i][j:j+60] for j in range(0,len(peps),60)]) + '\n')
+        origin = enzymeFullCut(proteins[key], enzyme_rules[enzyme])
+        for i in range(0, cleavage_number+1):
+            writeToFile(key, writeObj, i, origin)
     writeObj.close()
