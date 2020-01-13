@@ -1,0 +1,45 @@
+NAME
+    group2_task1.py -- an open reading frames(ORF) finder
+
+SYNOPSIS
+    python3 group2_task1.py [-h] -i INPUT_FILES [-o OUTPUT_FILE]
+                       [-f {+1,+2,+3,-1,-2,-3}] [-s MIN_SIZE]
+
+DESCRIPTION
+    An ORF Finder, genome sequence files and output file are in the same folder as
+    this programme. Every input fasta file could contain one or more nucleotide
+    sequences. It will skip all gaps and remove all ORFs with unknown codons
+    automatically.
+
+    The INPUT_FILES is a mandatory operand. If other operands are not specified, this
+    programme will generate ORFs for all 6 frames and use 50 as the minimum amino acids
+    in each protein sequence, and the default output file will be 'proteins.fasta'.
+
+    The following options are available:
+        -h, --help      show this help message and exit
+        -i              input filenames, use ',' to separate multiple files
+        -o              output filename, the default output file is proteins.fasta
+        -f {+1,+2,+3,-1,-2,-3}
+                        restrict to one single frame, if not specified, will
+                        produce for all frames
+        -s MIN_SIZE     define the minimum amino acids for each ORF,
+                        the default size is 50
+
+EXAMPLES
+    The following is how to generate protein sequences by default values.
+
+        python3 group2_task1.py -i genome.fasta
+
+    The following is how to generate protein sequences using multiple input files,
+    restricting the frame to -3, setting the minimum size of amino acids to 30 and
+    defining the output file to output.fasta.
+
+        python3 group2_task1.py -i input1.fasta,input2.fasta -f -3 -s 30 -o output.fasta
+
+DIAGNOSTICS
+    The utility exits 0 on success, and >0 if an error occurs.
+
+AUTHOR
+    Hanyi Mo (hanyi.mo@postgrad.manchester.ac.uk)
+
+BSD                              Nov 11, 2019                              BSD
